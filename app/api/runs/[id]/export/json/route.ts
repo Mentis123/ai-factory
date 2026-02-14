@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/adminAuth";
 import { exportRunJson } from "@/lib/export/json";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAdmin(request);
+  if (authError) return authError;
+
   const { id } = await params;
 
   try {

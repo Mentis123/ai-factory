@@ -33,8 +33,11 @@ export default function CreateRunPage() {
   });
 
   useEffect(() => {
-    fetch("/api/profiles")
-      .then((r) => safeJson<Profile[]>(r))
+    apiFetch("/api/profiles")
+      .then((r) => {
+        if (r.status === 401) return [];
+        return safeJson<Profile[]>(r);
+      })
       .then(setProfiles)
       .catch((err) => console.error("Failed to load profiles:", err));
   }, []);

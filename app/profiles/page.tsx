@@ -16,6 +16,7 @@ interface Profile {
 export default function ProfilesPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unauthorized, setUnauthorized] = useState(false);
   const [editing, setEditing] = useState<Profile | null>(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -28,8 +29,14 @@ export default function ProfilesPage() {
   });
 
   function fetchProfiles() {
-    fetch("/api/profiles")
-      .then((r) => safeJson<Profile[]>(r))
+    apiFetch("/api/profiles")
+      .then((r) => {
+        if (r.status === 401) {
+          setUnauthorized(true);
+          return [];
+        }
+        return safeJson<Profile[]>(r);
+      })
       .then(setProfiles)
       .catch((err) => console.error("Failed to load profiles:", err))
       .finally(() => setLoading(false));
@@ -327,6 +334,27 @@ export default function ProfilesPage() {
           {[1, 2].map((i) => (
             <div key={i} className="skeleton h-24 rounded-xl" />
           ))}
+        </div>
+      ) : unauthorized ? (
+        <div className="card text-center py-16 px-6">
+          <div
+            className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
+            style={{
+              background: "var(--navy-800)",
+              border: "1px solid var(--navy-700)",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--slate-400)" }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+          </div>
+          <p className="text-sm mb-1" style={{ color: "var(--slate-300)" }}>
+            Authentication required
+          </p>
+          <p className="text-xs" style={{ color: "var(--slate-400)" }}>
+            Enter your admin token in the top-right to access profiles
+          </p>
         </div>
       ) : profiles.length === 0 ? (
         <div className="card text-center py-16 px-6">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { safeJson } from "@/app/lib/api";
+import { apiFetch, safeJson } from "@/app/lib/api";
 
 interface RunPhase {
   phase_name: string;
@@ -23,10 +23,17 @@ interface Run {
 export default function RunsListPage() {
   const [runs, setRuns] = useState<Run[]>([]);
   const [loading, setLoading] = useState(true);
+  const [unauthorized, setUnauthorized] = useState(false);
 
   useEffect(() => {
-    fetch("/api/runs")
-      .then((r) => safeJson<Run[]>(r))
+    apiFetch("/api/runs")
+      .then((r) => {
+        if (r.status === 401) {
+          setUnauthorized(true);
+          return [];
+        }
+        return safeJson<Run[]>(r);
+      })
       .then(setRuns)
       .catch((err) => console.error("Failed to load runs:", err))
       .finally(() => setLoading(false));
@@ -91,19 +98,25 @@ export default function RunsListPage() {
             className="text-sm mt-1"
             style={{ color: "var(--slate-400)" }}
           >
-            {runs.length > 0 ? `${runs.length} run${runs.length !== 1 ? "s" : ""}` : "No runs yet"}
+            {unauthorized
+              ? "Enter your admin token to view runs"
+              : runs.length > 0
+                ? `${runs.length} run${runs.length !== 1 ? "s" : ""}`
+                : "No runs yet"}
           </p>
         </div>
-        <Link
-          href="/runs/new"
-          className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
-          style={{
-            background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
-            color: "var(--navy-950)",
-          }}
-        >
-          + Create Run
-        </Link>
+        {!unauthorized && (
+          <Link
+            href="/runs/new"
+            className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+            style={{
+              background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+              color: "var(--navy-950)",
+            }}
+          >
+            + Create Run
+          </Link>
+        )}
       </div>
 
       {loading ? (
@@ -112,10 +125,29 @@ export default function RunsListPage() {
             <div key={i} className="skeleton h-16 rounded-xl" />
           ))}
         </div>
+      ) : unauthorized ? (
+        <div className="card text-center py-16 px-6">
+          <div
+            className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
+            style={{
+              background: "var(--navy-800)",
+              border: "1px solid var(--navy-700)",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--slate-400)" }}>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+          </div>
+          <p className="text-sm mb-1" style={{ color: "var(--slate-300)" }}>
+            Authentication required
+          </p>
+          <p className="text-xs" style={{ color: "var(--slate-400)" }}>
+            Enter your admin token in the top-right to access pipeline data
+          </p>
+        </div>
       ) : runs.length === 0 ? (
-        <div
-          className="card text-center py-16 px-6"
-        >
+        <div className="card text-center py-16 px-6">
           <div
             className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
             style={{
@@ -146,48 +178,13 @@ export default function RunsListPage() {
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid var(--navy-700)" }}>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Name
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Topic
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Mode
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Status
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Progress
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Articles
-                </th>
-                <th
-                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
-                  style={{ color: "var(--slate-400)" }}
-                >
-                  Created
-                </th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Name</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Topic</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Mode</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Status</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Progress</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Articles</th>
+                <th className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--slate-400)" }}>Created</th>
               </tr>
             </thead>
             <tbody>
@@ -198,73 +195,27 @@ export default function RunsListPage() {
                     key={run.id}
                     className="transition-card cursor-pointer"
                     style={{ borderBottom: "1px solid var(--navy-800)" }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "var(--navy-800)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "transparent";
-                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = "var(--navy-800)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
                     <td className="px-5 py-3.5">
-                      <Link
-                        href={`/runs/${run.id}`}
-                        className="text-sm font-medium transition-colors"
-                        style={{ color: "var(--teal-400)" }}
-                      >
+                      <Link href={`/runs/${run.id}`} className="text-sm font-medium transition-colors" style={{ color: "var(--teal-400)" }}>
                         {run.run_name}
                       </Link>
                     </td>
-                    <td
-                      className="px-5 py-3.5 text-sm max-w-xs truncate"
-                      style={{ color: "var(--slate-300)" }}
-                    >
-                      {run.prompt_topic}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span
-                        className="text-[11px] font-mono uppercase"
-                        style={{ color: "var(--slate-400)" }}
-                      >
-                        {run.mode}
-                      </span>
-                    </td>
+                    <td className="px-5 py-3.5 text-sm max-w-xs truncate" style={{ color: "var(--slate-300)" }}>{run.prompt_topic}</td>
+                    <td className="px-5 py-3.5"><span className="text-[11px] font-mono uppercase" style={{ color: "var(--slate-400)" }}>{run.mode}</span></td>
                     <td className="px-5 py-3.5">{statusBadge(run.status)}</td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-2">
-                        <div
-                          className="w-16 h-1.5 rounded-full overflow-hidden"
-                          style={{ background: "var(--navy-800)" }}
-                        >
-                          <div
-                            className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${(progress.completed / progress.total) * 100}%`,
-                              background: progress.completed === progress.total
-                                ? "var(--emerald-500)"
-                                : "var(--teal-400)",
-                            }}
-                          />
+                        <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: "var(--navy-800)" }}>
+                          <div className="h-full rounded-full transition-all duration-500" style={{ width: `${(progress.completed / progress.total) * 100}%`, background: progress.completed === progress.total ? "var(--emerald-500)" : "var(--teal-400)" }} />
                         </div>
-                        <span
-                          className="text-xs font-mono"
-                          style={{ color: "var(--slate-400)" }}
-                        >
-                          {progress.completed}/{progress.total}
-                        </span>
+                        <span className="text-xs font-mono" style={{ color: "var(--slate-400)" }}>{progress.completed}/{progress.total}</span>
                       </div>
                     </td>
-                    <td
-                      className="px-5 py-3.5 text-sm font-mono"
-                      style={{ color: "var(--slate-400)" }}
-                    >
-                      {run._count.articles}
-                    </td>
-                    <td
-                      className="px-5 py-3.5 text-xs"
-                      style={{ color: "var(--slate-400)" }}
-                    >
-                      {new Date(run.created_at).toLocaleDateString()}
-                    </td>
+                    <td className="px-5 py-3.5 text-sm font-mono" style={{ color: "var(--slate-400)" }}>{run._count.articles}</td>
+                    <td className="px-5 py-3.5 text-xs" style={{ color: "var(--slate-400)" }}>{new Date(run.created_at).toLocaleDateString()}</td>
                   </tr>
                 );
               })}

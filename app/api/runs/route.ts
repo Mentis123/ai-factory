@@ -3,7 +3,10 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/adminAuth";
 import { PHASE_NAMES } from "@/lib/phases/helpers";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const authError = requireAdmin(request);
+  if (authError) return authError;
+
   try {
     const runs = await prisma.run.findMany({
       orderBy: { created_at: "desc" },

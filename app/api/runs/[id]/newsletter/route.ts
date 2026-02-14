@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/adminAuth";
 import { generateNewsletterHtml } from "@/lib/export/html";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const authError = requireAdmin(request);
+  if (authError) return authError;
+
   try {
     const { id } = await params;
 

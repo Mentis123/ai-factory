@@ -92,8 +92,11 @@ export default function RunDashboardPage() {
   const [filter, setFilter] = useState("all");
 
   const fetchRun = useCallback(() => {
-    fetch(`/api/runs/${id}`)
-      .then((r) => safeJson<RunData>(r))
+    apiFetch(`/api/runs/${id}`)
+      .then((r) => {
+        if (r.status === 401) return null;
+        return safeJson<RunData>(r);
+      })
       .then(setRun)
       .catch((err) => console.error("Failed to load run:", err))
       .finally(() => setLoading(false));
@@ -615,9 +618,18 @@ export default function RunDashboardPage() {
           Exports & Newsletter
         </h2>
         <div className="flex gap-3">
-          <a
-            href={`/api/runs/${id}/export/json`}
-            target="_blank"
+          <button
+            onClick={async () => {
+              const res = await apiFetch(`/api/runs/${id}/export/json`);
+              const data = await res.json();
+              const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `run-${id}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
             className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
             style={{
               background: "transparent",
@@ -638,9 +650,18 @@ export default function RunDashboardPage() {
             }}
           >
             Export JSON
-          </a>
-          <a
-            href={`/api/runs/${id}/export/xlsx`}
+          </button>
+          <button
+            onClick={async () => {
+              const res = await apiFetch(`/api/runs/${id}/export/xlsx`);
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `run-${id}.xlsx`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
             className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
             style={{
               background: "transparent",
@@ -661,10 +682,15 @@ export default function RunDashboardPage() {
             }}
           >
             Export XLSX
-          </a>
-          <a
-            href={`/api/runs/${id}/newsletter`}
-            target="_blank"
+          </button>
+          <button
+            onClick={async () => {
+              const res = await apiFetch(`/api/runs/${id}/newsletter`);
+              const html = await res.text();
+              const blob = new Blob([html], { type: "text/html" });
+              const url = URL.createObjectURL(blob);
+              window.open(url, "_blank");
+            }}
             className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
             style={{
               background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
@@ -672,20 +698,43 @@ export default function RunDashboardPage() {
             }}
           >
             View Newsletter
-          </a>
+          </button>
         </div>
 
         {run.newsletters.length > 0 && (
-          <div className="mt-5">
-            <iframe
-              src={`/api/runs/${id}/newsletter`}
-              className="w-full h-96 rounded-lg"
-              style={{ border: "1px solid var(--navy-700)" }}
-              title="Newsletter Preview"
-            />
-          </div>
+          <NewsletterPreview runId={id} />
         )}
       </div>
+    </div>
+  );
+}
+
+function NewsletterPreview({ runId }: { runId: string }) {
+  const [src, setSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiFetch(`/api/runs/${runId}/newsletter`)
+      .then((r) => r.text())
+      .then((html) => {
+        const blob = new Blob([html], { type: "text/html" });
+        setSrc(URL.createObjectURL(blob));
+      })
+      .catch(() => {});
+    return () => {
+      if (src) URL.revokeObjectURL(src);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runId]);
+
+  if (!src) return null;
+  return (
+    <div className="mt-5">
+      <iframe
+        src={src}
+        className="w-full h-96 rounded-lg"
+        style={{ border: "1px solid var(--navy-700)" }}
+        title="Newsletter Preview"
+      />
     </div>
   );
 }
