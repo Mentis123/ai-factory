@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch, safeJson } from "@/app/lib/api";
 
 interface Profile {
   id: string;
@@ -34,8 +34,9 @@ export default function CreateRunPage() {
 
   useEffect(() => {
     fetch("/api/profiles")
-      .then((r) => r.json())
-      .then(setProfiles);
+      .then((r) => safeJson<Profile[]>(r))
+      .then(setProfiles)
+      .catch((err) => console.error("Failed to load profiles:", err));
   }, []);
 
   function handleProfileChange(profileId: string) {

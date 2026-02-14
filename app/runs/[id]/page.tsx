@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { apiFetch } from "@/app/lib/api";
+import { apiFetch, safeJson } from "@/app/lib/api";
 
 interface ArticleRanking {
   category: string;
@@ -93,8 +93,9 @@ export default function RunDashboardPage() {
 
   const fetchRun = useCallback(() => {
     fetch(`/api/runs/${id}`)
-      .then((r) => r.json())
+      .then((r) => safeJson<RunData>(r))
       .then(setRun)
+      .catch((err) => console.error("Failed to load run:", err))
       .finally(() => setLoading(false));
   }, [id]);
 

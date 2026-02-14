@@ -5,24 +5,32 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  try {
+    const { id } = await params;
 
-  const run = await prisma.run.findUnique({
-    where: { id },
-    include: {
-      phases: { orderBy: { created_at: "asc" } },
-      articles: {
-        include: { ranking: true, summary: true },
-        orderBy: [{ sort_index: "asc" }, { created_at: "asc" }],
+    const run = await prisma.run.findUnique({
+      where: { id },
+      include: {
+        phases: { orderBy: { created_at: "asc" } },
+        articles: {
+          include: { ranking: true, summary: true },
+          orderBy: [{ sort_index: "asc" }, { created_at: "asc" }],
+        },
+        newsletters: { orderBy: { created_at: "desc" }, take: 1 },
+        profile: true,
       },
-      newsletters: { orderBy: { created_at: "desc" }, take: 1 },
-      profile: true,
-    },
-  });
+    });
 
-  if (!run) {
-    return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    if (!run) {
+      return NextResponse.json({ error: "Run not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(run);
+  } catch (err) {
+    console.error("GET /api/runs/[id] error:", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Database error" },
+      { status: 500 }
+    );
   }
-
-  return NextResponse.json(run);
 }

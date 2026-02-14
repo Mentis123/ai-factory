@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { safeJson } from "@/app/lib/api";
 
 interface RunPhase {
   phase_name: string;
@@ -25,8 +26,9 @@ export default function RunsListPage() {
 
   useEffect(() => {
     fetch("/api/runs")
-      .then((r) => r.json())
+      .then((r) => safeJson<Run[]>(r))
       .then(setRuns)
+      .catch((err) => console.error("Failed to load runs:", err))
       .finally(() => setLoading(false));
   }, []);
 
