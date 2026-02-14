@@ -114,17 +114,26 @@ export default function RunDashboardPage() {
         method: "POST",
         body: JSON.stringify({ runAll }),
       });
-      const data = await res.json();
-      if (data.logs) setPhaseLogs(data.logs.join("\n"));
-      if (data.results)
+      if (!res.ok) {
+        const text = await res.text();
+        setPhaseLogs(`Error (${res.status}): ${text || res.statusText}`);
+        fetchRun();
+        return;
+      }
+      const data = await safeJson<{ logs?: string[]; results?: { phase: string; logs: string[] }[]; error?: string }>(res);
+      if (data.error) {
+        setPhaseLogs(`Error: ${data.error}`);
+      } else if (data.results) {
         setPhaseLogs(
           data.results
             .map(
-              (r: { phase: string; logs: string[] }) =>
-                `--- ${r.phase} ---\n${r.logs.join("\n")}`
+              (r) => `--- ${r.phase} ---\n${r.logs.join("\n")}`
             )
             .join("\n\n")
         );
+      } else if (data.logs) {
+        setPhaseLogs(data.logs.join("\n"));
+      }
       fetchRun();
     } catch (err) {
       setPhaseLogs(`Error: ${err}`);
