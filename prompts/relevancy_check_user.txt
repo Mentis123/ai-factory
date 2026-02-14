@@ -1,0 +1,7 @@
+Newsletter Topic: {{TOPIC}}
+Keywords: {{KEYWORDS}}
+
+Article Title: {{TITLE}}
+
+Article Content (preview):
+{{CONTENT_PREVIEW}}

@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id                     String   @id @default(cuid())
+  name                   String
+  default_source_urls    String[]
+  default_keywords       String[]
+  trends_to_watch        String[]
+  competitors_to_monitor String[]
+  created_at             DateTime @default(now())
+  updated_at             DateTime @updatedAt
+  runs                   Run[]
+}
+
+model Run {
+  id                 String       @id @default(cuid())
+  run_name           String
+  prompt_topic       String
+  keywords           String[]
+  specific_urls      String[]
+  source_urls        String[]
+  lookback_days      Int          @default(7)
+  mode               String       @default("auto")
+  min_fit_score      Float        @default(6.0)
+  max_total_articles Int          @default(12)
+  max_per_domain     Int          @default(4)
+  ranking_enabled    Boolean      @default(true)
+  status             String       @default("created")
+  profile_id         String?
+  profile            Profile?     @relation(fields: [profile_id], references: [id])
+  created_at         DateTime     @default(now())
+  updated_at         DateTime     @updatedAt
+  phases             RunPhase[]
+  articles           Article[]
+  newsletters        Newsletter[]
+}
+
+model RunPhase {
+  id           String    @id @default(cuid())
+  run_id       String
+  run          Run       @relation(fields: [run_id], references: [id], onDelete: Cascade)
+  phase_name   String
+  status       String    @default("pending")
+  started_at   DateTime?
+  completed_at DateTime?
+  logs         String?   @db.Text
+  error        String?   @db.Text
+  created_at   DateTime  @default(now())
+
+  @@unique([run_id, phase_name])
+}
+
+model Article {
+  id              String          @id @default(cuid())
+  run_id          String
+  run             Run             @relation(fields: [run_id], references: [id], onDelete: Cascade)
+  url             String          @db.Text
+  canonical_url   String?         @db.Text
+  title           String?         @db.Text
+  source_url      String?         @db.Text
+  domain          String?
+  discovered_at   DateTime        @default(now())
+  content_text    String?         @db.Text
+  word_count      Int?
+  publish_date    DateTime?
+  is_fetched      Boolean         @default(false)
+  is_relevant     Boolean?
+  is_duplicate    Boolean         @default(false)
+  duplicate_of_id String?
+  is_kept         Boolean         @default(true)
+  is_shortlisted  Boolean         @default(false)
+  sort_index      Int?
+  ranking         ArticleRanking?
+  summary         ArticleSummary?
+  created_at      DateTime        @default(now())
+  updated_at      DateTime        @updatedAt
+}
+
+model ArticleRanking {
+  id               String   @id @default(cuid())
+  article_id       String   @unique
+  article          Article  @relation(fields: [article_id], references: [id], onDelete: Cascade)
+  category         String
+  score            Float
+  tier             String
+  key_findings     String[]
+  key_entities     String[]
+  rationale        String   @db.Text
+  suggested_header String
+  raw_json         String   @db.Text
+  created_at       DateTime @default(now())
+}
+
+model ArticleSummary {
+  id             String   @id @default(cuid())
+  article_id     String   @unique
+  article        Article  @relation(fields: [article_id], references: [id], onDelete: Cascade)
+  summary_text   String   @db.Text
+  why_it_matters String[]
+  implications   String?  @db.Text
+  created_at     DateTime @default(now())
+}
+
+model Newsletter {
+  id           String   @id @default(cuid())
+  run_id       String
+  run          Run      @relation(fields: [run_id], references: [id], onDelete: Cascade)
+  title        String
+  html_content String   @db.Text
+  created_at   DateTime @default(now())
+}

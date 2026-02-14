@@ -1,0 +1,9 @@
+Newsletter Topic: {{TOPIC}}
+
+Summarise this article for the newsletter.
+
+Title: {{TITLE}}
+Tier: {{TIER}} (Score: {{SCORE}})
+
+Article Content:
+{{CONTENT}}

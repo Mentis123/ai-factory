@@ -1,0 +1,11 @@
+Newsletter Topic: {{TOPIC}}
+
+Evaluate this article:
+
+Title: {{TITLE}}
+Domain: {{DOMAIN}}
+URL: {{URL}}
+Word Count: {{WORD_COUNT}}
+
+Article Content:
+{{CONTENT}}
