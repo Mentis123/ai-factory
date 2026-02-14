@@ -64,6 +64,16 @@ interface RunData {
 }
 
 const PHASE_LABELS: Record<string, string> = {
+  extract_information: "Extract",
+  source_articles: "Source",
+  grab_articles: "Grab",
+  rank_articles: "Rank",
+  summarise_articles: "Summarise",
+  generate_final_newsletter: "Generate",
+  save_articles: "Finalize",
+};
+
+const PHASE_LABELS_FULL: Record<string, string> = {
   extract_information: "Extract Information",
   source_articles: "Source Articles",
   grab_articles: "Grab Articles",
@@ -135,35 +145,67 @@ export default function RunDashboardPage() {
     return next?.phase_name || null;
   }
 
-  function statusColor(status: string) {
+  function phaseStatusStyle(status: string) {
     switch (status) {
       case "completed":
-        return "bg-green-100 text-green-700";
+        return {
+          bg: "rgba(16, 185, 129, 0.15)",
+          border: "rgba(16, 185, 129, 0.4)",
+          color: "var(--emerald-500)",
+          dot: "var(--emerald-500)",
+        };
       case "in_progress":
-        return "bg-blue-100 text-blue-700";
+        return {
+          bg: "rgba(20, 184, 166, 0.15)",
+          border: "rgba(20, 184, 166, 0.4)",
+          color: "var(--teal-400)",
+          dot: "var(--teal-400)",
+        };
       case "failed":
-        return "bg-red-100 text-red-700";
+        return {
+          bg: "rgba(244, 63, 94, 0.15)",
+          border: "rgba(244, 63, 94, 0.4)",
+          color: "var(--rose-500)",
+          dot: "var(--rose-500)",
+        };
       case "skipped":
-        return "bg-yellow-100 text-yellow-700";
+        return {
+          bg: "rgba(245, 158, 11, 0.1)",
+          border: "rgba(245, 158, 11, 0.3)",
+          color: "var(--amber-500)",
+          dot: "var(--amber-500)",
+        };
       default:
-        return "bg-gray-100 text-gray-500";
+        return {
+          bg: "var(--navy-800)",
+          border: "var(--navy-700)",
+          color: "var(--slate-400)",
+          dot: "var(--navy-600)",
+        };
     }
   }
 
-  function tierBadge(tier: string | undefined, score: number | undefined) {
-    if (!tier) return null;
-    const colors: Record<string, string> = {
-      Essential: "bg-red-100 text-red-700",
-      Important: "bg-amber-100 text-amber-700",
-      Optional: "bg-gray-100 text-gray-600",
-    };
-    return (
-      <span
-        className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[tier] || colors.Optional}`}
-      >
-        {tier} {score?.toFixed(1)}
-      </span>
-    );
+  function tierStyle(tier: string | undefined) {
+    switch (tier) {
+      case "Essential":
+        return {
+          bg: "rgba(244, 63, 94, 0.1)",
+          color: "var(--rose-500)",
+          border: "rgba(244, 63, 94, 0.3)",
+        };
+      case "Important":
+        return {
+          bg: "rgba(245, 158, 11, 0.1)",
+          color: "var(--amber-400)",
+          border: "rgba(245, 158, 11, 0.3)",
+        };
+      default:
+        return {
+          bg: "var(--navy-800)",
+          color: "var(--slate-400)",
+          border: "var(--navy-700)",
+        };
+    }
   }
 
   const filteredArticles = run?.articles.filter((a) => {
@@ -181,8 +223,20 @@ export default function RunDashboardPage() {
     }
   });
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
-  if (!run) return <p className="text-red-500">Run not found.</p>;
+  if (loading)
+    return (
+      <div className="space-y-6">
+        <div className="skeleton h-10 w-64 rounded-lg" />
+        <div className="skeleton h-32 rounded-xl" />
+        <div className="skeleton h-64 rounded-xl" />
+      </div>
+    );
+  if (!run)
+    return (
+      <p className="text-sm" style={{ color: "var(--rose-500)" }}>
+        Run not found.
+      </p>
+    );
 
   const nextPhase = getNextPhase();
 
@@ -190,33 +244,89 @@ export default function RunDashboardPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{run.run_name}</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          {run.prompt_topic} &middot; {run.mode} mode &middot;{" "}
-          {run.keywords.join(", ")}
-        </p>
+        <h1
+          className="text-2xl font-semibold tracking-tight"
+          style={{ color: "var(--slate-200)" }}
+        >
+          {run.run_name}
+        </h1>
+        <div className="flex items-center gap-3 mt-1.5">
+          <span className="text-sm" style={{ color: "var(--slate-400)" }}>
+            {run.prompt_topic}
+          </span>
+          <span
+            className="w-1 h-1 rounded-full"
+            style={{ background: "var(--navy-600)" }}
+          />
+          <span
+            className="text-[11px] font-mono uppercase"
+            style={{ color: "var(--slate-400)" }}
+          >
+            {run.mode}
+          </span>
+          {run.keywords.length > 0 && (
+            <>
+              <span
+                className="w-1 h-1 rounded-full"
+                style={{ background: "var(--navy-600)" }}
+              />
+              <span className="text-xs" style={{ color: "var(--slate-400)" }}>
+                {run.keywords.slice(0, 4).join(", ")}
+                {run.keywords.length > 4 && ` +${run.keywords.length - 4}`}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
-      {/* Phase Panel */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold text-gray-900">Pipeline Phases</h2>
+      {/* Phase Pipeline */}
+      <div className="card p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2
+            className="text-sm font-semibold uppercase tracking-wider"
+            style={{ color: "var(--slate-300)" }}
+          >
+            Pipeline
+          </h2>
           <div className="flex gap-2">
             {nextPhase && (
               <>
                 <button
                   onClick={() => executePhase(nextPhase)}
                   disabled={!!executing}
-                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 disabled:opacity-50"
+                  style={{
+                    background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+                    color: "var(--navy-950)",
+                  }}
                 >
-                  {executing
-                    ? `Running ${PHASE_LABELS[executing]}...`
-                    : `Run: ${PHASE_LABELS[nextPhase]}`}
+                  {executing ? (
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="spinner"
+                        style={{ width: 12, height: 12, borderWidth: 1.5 }}
+                      />
+                      {PHASE_LABELS_FULL[executing]}...
+                    </span>
+                  ) : (
+                    `Run: ${PHASE_LABELS_FULL[nextPhase]}`
+                  )}
                 </button>
                 <button
                   onClick={() => executePhase(nextPhase, true)}
                   disabled={!!executing}
-                  className="border border-blue-200 text-blue-700 px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-50 disabled:opacity-50"
+                  className="px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 disabled:opacity-50"
+                  style={{
+                    background: "transparent",
+                    border: "1px solid rgba(20, 184, 166, 0.3)",
+                    color: "var(--teal-400)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "rgba(20, 184, 166, 0.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "transparent";
+                  }}
                 >
                   Run All Remaining
                 </button>
@@ -225,33 +335,63 @@ export default function RunDashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
-          {run.phases.map((phase) => (
-            <div
-              key={phase.id}
-              className="text-center"
-            >
+        <div className="grid grid-cols-7 gap-1.5">
+          {run.phases.map((phase) => {
+            const ps = phaseStatusStyle(phase.status);
+            return (
               <div
-                className={`px-2 py-2 rounded-lg text-xs font-medium ${statusColor(phase.status)}`}
+                key={phase.id}
+                className={`phase-step text-center ${phase.status === "in_progress" ? "phase-active" : ""}`}
               >
-                {PHASE_LABELS[phase.phase_name] || phase.phase_name}
-              </div>
-              <p className="text-[10px] text-gray-400 mt-1">{phase.status}</p>
-              {phase.status === "failed" && (
-                <button
-                  onClick={() => executePhase(phase.phase_name)}
-                  disabled={!!executing}
-                  className="text-[10px] text-red-600 hover:underline mt-1"
+                <div
+                  className="px-2 py-2.5 rounded-lg text-[11px] font-medium transition-all duration-200"
+                  style={{
+                    background: ps.bg,
+                    border: `1px solid ${ps.border}`,
+                    color: ps.color,
+                  }}
                 >
-                  Retry
-                </button>
-              )}
-            </div>
-          ))}
+                  <div className="flex items-center justify-center gap-1.5">
+                    {phase.status === "completed" && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                    {phase.status === "in_progress" && (
+                      <span className="spinner" style={{ width: 10, height: 10, borderWidth: 1.5 }} />
+                    )}
+                    {phase.status === "failed" && (
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                        <path d="M3 3l4 4M7 3l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    )}
+                    <span>{PHASE_LABELS[phase.phase_name]}</span>
+                  </div>
+                </div>
+                {phase.status === "failed" && (
+                  <button
+                    onClick={() => executePhase(phase.phase_name)}
+                    disabled={!!executing}
+                    className="text-[10px] font-medium mt-1.5 transition-colors"
+                    style={{ color: "var(--rose-500)" }}
+                  >
+                    Retry
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {phaseLogs && (
-          <pre className="mt-4 bg-gray-50 p-3 rounded text-xs text-gray-600 overflow-auto max-h-60 whitespace-pre-wrap">
+          <pre
+            className="mt-5 p-4 rounded-lg text-xs overflow-auto max-h-60 whitespace-pre-wrap font-mono"
+            style={{
+              background: "var(--navy-800)",
+              border: "1px solid var(--navy-700)",
+              color: "var(--slate-400)",
+            }}
+          >
             {phaseLogs}
           </pre>
         )}
@@ -259,9 +399,12 @@ export default function RunDashboardPage() {
 
       {/* Articles Table */}
       {run.articles.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-semibold text-gray-900">
+            <h2
+              className="text-sm font-semibold uppercase tracking-wider"
+              style={{ color: "var(--slate-300)" }}
+            >
               Articles ({filteredArticles?.length})
             </h2>
             <div className="flex gap-1">
@@ -270,11 +413,29 @@ export default function RunDashboardPage() {
                   <button
                     key={f}
                     onClick={() => setFilter(f)}
-                    className={`px-3 py-1 rounded text-xs font-medium ${
-                      filter === f
-                        ? "bg-blue-100 text-blue-700"
-                        : "text-gray-500 hover:bg-gray-100"
-                    }`}
+                    className="px-3 py-1 rounded-md text-[11px] font-medium transition-all duration-200"
+                    style={{
+                      background:
+                        filter === f
+                          ? "rgba(20, 184, 166, 0.15)"
+                          : "transparent",
+                      color:
+                        filter === f ? "var(--teal-400)" : "var(--slate-400)",
+                      border:
+                        filter === f
+                          ? "1px solid rgba(20, 184, 166, 0.3)"
+                          : "1px solid transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (filter !== f) {
+                        e.currentTarget.style.background = "var(--navy-800)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (filter !== f) {
+                        e.currentTarget.style.background = "transparent";
+                      }
+                    }}
                   >
                     {f.charAt(0).toUpperCase() + f.slice(1)}
                   </button>
@@ -286,100 +447,158 @@ export default function RunDashboardPage() {
           <div className="overflow-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Title
-                  </th>
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Domain
-                  </th>
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Words
-                  </th>
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Tier
-                  </th>
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Status
-                  </th>
-                  <th className="text-left py-2 px-2 text-xs text-gray-500 font-medium">
-                    Keep
-                  </th>
+                <tr style={{ borderBottom: "1px solid var(--navy-700)" }}>
+                  {["Title", "Domain", "Words", "Tier", "Status", "Keep"].map(
+                    (h) => (
+                      <th
+                        key={h}
+                        className="text-left py-2.5 px-3 text-[11px] font-medium uppercase tracking-wider"
+                        style={{ color: "var(--slate-400)" }}
+                      >
+                        {h}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
               <tbody>
-                {filteredArticles?.map((article) => (
-                  <tr
-                    key={article.id}
-                    className="border-b border-gray-50 hover:bg-gray-50"
-                  >
-                    <td className="py-2 px-2 max-w-xs">
-                      <a
-                        href={article.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline text-xs block truncate"
-                      >
-                        {article.title || article.url}
-                      </a>
-                      {article.summary && (
-                        <p className="text-[11px] text-gray-400 mt-1 line-clamp-2">
-                          {article.summary.summary_text}
-                        </p>
-                      )}
-                    </td>
-                    <td className="py-2 px-2 text-xs text-gray-500">
-                      {article.domain}
-                    </td>
-                    <td className="py-2 px-2 text-xs text-gray-500">
-                      {article.word_count || "—"}
-                    </td>
-                    <td className="py-2 px-2">
-                      {tierBadge(
-                        article.ranking?.tier,
-                        article.ranking?.score
-                      )}
-                    </td>
-                    <td className="py-2 px-2">
-                      <div className="flex gap-1 flex-wrap">
-                        {article.is_duplicate && (
-                          <span className="text-[10px] bg-orange-100 text-orange-600 px-1.5 rounded">
-                            dup
-                          </span>
-                        )}
-                        {article.is_relevant === false && (
-                          <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 rounded">
-                            irrelevant
-                          </span>
-                        )}
-                        {article.is_relevant === true && (
-                          <span className="text-[10px] bg-green-100 text-green-600 px-1.5 rounded">
-                            relevant
-                          </span>
-                        )}
+                {filteredArticles?.map((article) => {
+                  const ts = tierStyle(article.ranking?.tier);
+                  return (
+                    <tr
+                      key={article.id}
+                      style={{ borderBottom: "1px solid var(--navy-800)" }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "rgba(26, 34, 64, 0.5)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      <td className="py-2.5 px-3 max-w-xs">
+                        <a
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium block truncate transition-colors"
+                          style={{ color: "var(--teal-400)" }}
+                        >
+                          {article.title || article.url}
+                        </a>
                         {article.summary && (
-                          <span className="text-[10px] bg-blue-100 text-blue-600 px-1.5 rounded">
-                            summarised
+                          <p
+                            className="text-[11px] mt-1 line-clamp-2"
+                            style={{ color: "var(--slate-400)" }}
+                          >
+                            {article.summary.summary_text}
+                          </p>
+                        )}
+                      </td>
+                      <td
+                        className="py-2.5 px-3 text-xs font-mono"
+                        style={{ color: "var(--slate-400)" }}
+                      >
+                        {article.domain}
+                      </td>
+                      <td
+                        className="py-2.5 px-3 text-xs font-mono"
+                        style={{ color: "var(--slate-400)" }}
+                      >
+                        {article.word_count || "\u2014"}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        {article.ranking?.tier && (
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{
+                              background: ts.bg,
+                              color: ts.color,
+                              border: `1px solid ${ts.border}`,
+                            }}
+                          >
+                            {article.ranking.tier}{" "}
+                            {article.ranking.score.toFixed(1)}
                           </span>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-2 px-2">
-                      <button
-                        onClick={() =>
-                          toggleKept(article.id, article.is_kept)
-                        }
-                        className={`text-xs px-2 py-0.5 rounded ${
-                          article.is_kept
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {article.is_kept ? "Kept" : "Dropped"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <div className="flex gap-1 flex-wrap">
+                          {article.is_duplicate && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                              style={{
+                                background: "rgba(245, 158, 11, 0.1)",
+                                color: "var(--amber-400)",
+                                border: "1px solid rgba(245, 158, 11, 0.2)",
+                              }}
+                            >
+                              dup
+                            </span>
+                          )}
+                          {article.is_relevant === false && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                              style={{
+                                background: "var(--navy-800)",
+                                color: "var(--slate-400)",
+                                border: "1px solid var(--navy-700)",
+                              }}
+                            >
+                              irrelevant
+                            </span>
+                          )}
+                          {article.is_relevant === true && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                              style={{
+                                background: "rgba(16, 185, 129, 0.1)",
+                                color: "var(--emerald-500)",
+                                border: "1px solid rgba(16, 185, 129, 0.2)",
+                              }}
+                            >
+                              relevant
+                            </span>
+                          )}
+                          {article.summary && (
+                            <span
+                              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                              style={{
+                                background: "rgba(20, 184, 166, 0.1)",
+                                color: "var(--teal-400)",
+                                border: "1px solid rgba(20, 184, 166, 0.2)",
+                              }}
+                            >
+                              summarised
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <button
+                          onClick={() =>
+                            toggleKept(article.id, article.is_kept)
+                          }
+                          className="text-[11px] px-2.5 py-1 rounded-md font-medium transition-all duration-200"
+                          style={
+                            article.is_kept
+                              ? {
+                                  background: "rgba(16, 185, 129, 0.1)",
+                                  color: "var(--emerald-500)",
+                                  border: "1px solid rgba(16, 185, 129, 0.3)",
+                                }
+                              : {
+                                  background: "rgba(244, 63, 94, 0.1)",
+                                  color: "var(--rose-500)",
+                                  border: "1px solid rgba(244, 63, 94, 0.3)",
+                                }
+                          }
+                        >
+                          {article.is_kept ? "Kept" : "Dropped"}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -387,38 +606,80 @@ export default function RunDashboardPage() {
       )}
 
       {/* Newsletter Preview & Exports */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h2 className="font-semibold text-gray-900 mb-4">
+      <div className="card p-6">
+        <h2
+          className="text-sm font-semibold uppercase tracking-wider mb-4"
+          style={{ color: "var(--slate-300)" }}
+        >
           Exports & Newsletter
         </h2>
         <div className="flex gap-3">
           <a
             href={`/api/runs/${id}/export/json`}
             target="_blank"
-            className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50"
+            className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--navy-700)",
+              color: "var(--slate-400)",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "var(--navy-600)";
+              el.style.color = "var(--slate-200)";
+              el.style.background = "var(--navy-800)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "var(--navy-700)";
+              el.style.color = "var(--slate-400)";
+              el.style.background = "transparent";
+            }}
           >
             Export JSON
           </a>
           <a
             href={`/api/runs/${id}/export/xlsx`}
-            className="border border-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-50"
+            className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--navy-700)",
+              color: "var(--slate-400)",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "var(--navy-600)";
+              el.style.color = "var(--slate-200)";
+              el.style.background = "var(--navy-800)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget;
+              el.style.borderColor = "var(--navy-700)";
+              el.style.color = "var(--slate-400)";
+              el.style.background = "transparent";
+            }}
           >
             Export XLSX
           </a>
           <a
             href={`/api/runs/${id}/newsletter`}
             target="_blank"
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+            className="px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200"
+            style={{
+              background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+              color: "var(--navy-950)",
+            }}
           >
             View Newsletter
           </a>
         </div>
 
         {run.newsletters.length > 0 && (
-          <div className="mt-4">
+          <div className="mt-5">
             <iframe
               src={`/api/runs/${id}/newsletter`}
-              className="w-full h-96 border border-gray-200 rounded-lg"
+              className="w-full h-96 rounded-lg"
+              style={{ border: "1px solid var(--navy-700)" }}
               title="Newsletter Preview"
             />
           </div>

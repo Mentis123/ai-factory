@@ -1,13 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import AdminTokenInput from "./components/AdminTokenInput";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -25,39 +20,69 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 min-h-screen`}
+        className={`${geistMono.variable} antialiased min-h-screen`}
+        style={{ background: "var(--navy-950)", color: "var(--slate-200)" }}
       >
-        <nav className="bg-white border-b border-gray-200 px-6 py-3">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="text-xl font-bold text-gray-900">
-                AI Factory
-              </span>
-              <span className="text-xs text-gray-400 font-mono">
-                by GAI Insights
-              </span>
+        <nav
+          className="noise-bg sticky top-0 z-50 backdrop-blur-sm"
+          style={{
+            background: "rgba(15, 22, 41, 0.85)",
+            borderBottom: "1px solid var(--navy-700)",
+          }}
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
+            <Link href="/" className="flex items-center gap-3 group">
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                style={{
+                  background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+                  color: "var(--navy-950)",
+                }}
+              >
+                AF
+              </div>
+              <div className="flex flex-col">
+                <span
+                  className="text-sm font-semibold tracking-wide"
+                  style={{ color: "var(--slate-200)" }}
+                >
+                  AI FACTORY
+                </span>
+                <span
+                  className="text-[10px] font-mono tracking-widest uppercase"
+                  style={{ color: "var(--slate-400)" }}
+                >
+                  GAI Insights
+                </span>
+              </div>
             </Link>
-            <div className="flex items-center gap-6">
-              <Link
-                href="/"
-                className="text-sm text-gray-600 hover:text-gray-900"
+            <div className="flex items-center gap-1">
+              <NavLink href="/" label="Runs" />
+              <NavLink href="/profiles" label="Profiles" />
+              <div
+                className="ml-3 pl-3"
+                style={{ borderLeft: "1px solid var(--navy-700)" }}
               >
-                Runs
-              </Link>
-              <Link
-                href="/profiles"
-                className="text-sm text-gray-600 hover:text-gray-900"
-              >
-                Profiles
-              </Link>
-              <AdminTokenInput />
+                <AdminTokenInput />
+              </div>
             </div>
           </div>
         </nav>
         <main className="max-w-7xl mx-auto px-6 py-8">{children}</main>
       </body>
     </html>
+  );
+}
+
+function NavLink({ href, label }: { href: string; label: string }) {
+  return (
+    <Link
+      href={href}
+      className="nav-link px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+    >
+      {label}
+    </Link>
   );
 }

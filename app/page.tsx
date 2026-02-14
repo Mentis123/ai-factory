@@ -34,19 +34,41 @@ export default function RunsListPage() {
     const completed = phases.filter(
       (p) => p.status === "completed" || p.status === "skipped"
     ).length;
-    return `${completed}/${phases.length}`;
+    return { completed, total: phases.length };
   }
 
   function statusBadge(status: string) {
-    const colors: Record<string, string> = {
-      created: "bg-gray-100 text-gray-700",
-      running: "bg-blue-100 text-blue-700",
-      completed: "bg-green-100 text-green-700",
-      failed: "bg-red-100 text-red-700",
+    const styles: Record<string, { bg: string; color: string; border: string }> = {
+      created: {
+        bg: "var(--navy-800)",
+        color: "var(--slate-400)",
+        border: "var(--navy-700)",
+      },
+      running: {
+        bg: "rgba(20, 184, 166, 0.1)",
+        color: "var(--teal-400)",
+        border: "rgba(20, 184, 166, 0.3)",
+      },
+      completed: {
+        bg: "rgba(16, 185, 129, 0.1)",
+        color: "var(--emerald-500)",
+        border: "rgba(16, 185, 129, 0.3)",
+      },
+      failed: {
+        bg: "rgba(244, 63, 94, 0.1)",
+        color: "var(--rose-500)",
+        border: "rgba(244, 63, 94, 0.3)",
+      },
     };
+    const s = styles[status] || styles.created;
     return (
       <span
-        className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors[status] || colors.created}`}
+        className="px-2 py-0.5 rounded-full text-[11px] font-medium"
+        style={{
+          background: s.bg,
+          color: s.color,
+          border: `1px solid ${s.border}`,
+        }}
       >
         {status}
       </span>
@@ -55,88 +77,195 @@ export default function RunsListPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Runs</h1>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1
+            className="text-2xl font-semibold tracking-tight"
+            style={{ color: "var(--slate-200)" }}
+          >
+            Pipeline Runs
+          </h1>
+          <p
+            className="text-sm mt-1"
+            style={{ color: "var(--slate-400)" }}
+          >
+            {runs.length > 0 ? `${runs.length} run${runs.length !== 1 ? "s" : ""}` : "No runs yet"}
+          </p>
+        </div>
         <Link
           href="/runs/new"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+          className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+          style={{
+            background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+            color: "var(--navy-950)",
+          }}
         >
-          Create Run
+          + Create Run
         </Link>
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Loading...</p>
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton h-16 rounded-xl" />
+          ))}
+        </div>
       ) : runs.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-500 mb-4">No runs yet.</p>
+        <div
+          className="card text-center py-16 px-6"
+        >
+          <div
+            className="w-12 h-12 rounded-xl mx-auto mb-4 flex items-center justify-center"
+            style={{
+              background: "var(--navy-800)",
+              border: "1px solid var(--navy-700)",
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--slate-400)" }}>
+              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+            </svg>
+          </div>
+          <p className="text-sm mb-1" style={{ color: "var(--slate-300)" }}>
+            No pipeline runs yet
+          </p>
+          <p className="text-xs mb-4" style={{ color: "var(--slate-400)" }}>
+            Create your first run to start curating articles
+          </p>
           <Link
             href="/runs/new"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm font-medium transition-colors"
+            style={{ color: "var(--teal-400)" }}
           >
-            Create your first run
+            Create your first run →
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--navy-700)" }}>
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Name
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Topic
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Mode
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Status
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
-                  Phases
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
+                  Progress
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Articles
                 </th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                <th
+                  className="text-left px-5 py-3 text-[11px] font-medium uppercase tracking-wider"
+                  style={{ color: "var(--slate-400)" }}
+                >
                   Created
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {runs.map((run) => (
-                <tr
-                  key={run.id}
-                  className="hover:bg-gray-50 cursor-pointer"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`/runs/${run.id}`}
-                      className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            <tbody>
+              {runs.map((run) => {
+                const progress = phaseProgress(run.phases);
+                return (
+                  <tr
+                    key={run.id}
+                    className="transition-card cursor-pointer"
+                    style={{ borderBottom: "1px solid var(--navy-800)" }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "var(--navy-800)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    <td className="px-5 py-3.5">
+                      <Link
+                        href={`/runs/${run.id}`}
+                        className="text-sm font-medium transition-colors"
+                        style={{ color: "var(--teal-400)" }}
+                      >
+                        {run.run_name}
+                      </Link>
+                    </td>
+                    <td
+                      className="px-5 py-3.5 text-sm max-w-xs truncate"
+                      style={{ color: "var(--slate-300)" }}
                     >
-                      {run.run_name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600 max-w-xs truncate">
-                    {run.prompt_topic}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {run.mode}
-                  </td>
-                  <td className="px-4 py-3">{statusBadge(run.status)}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600 font-mono">
-                    {phaseProgress(run.phases)}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
-                    {run._count.articles}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-400">
-                    {new Date(run.created_at).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
+                      {run.prompt_topic}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span
+                        className="text-[11px] font-mono uppercase"
+                        style={{ color: "var(--slate-400)" }}
+                      >
+                        {run.mode}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">{statusBadge(run.status)}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-16 h-1.5 rounded-full overflow-hidden"
+                          style={{ background: "var(--navy-800)" }}
+                        >
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${(progress.completed / progress.total) * 100}%`,
+                              background: progress.completed === progress.total
+                                ? "var(--emerald-500)"
+                                : "var(--teal-400)",
+                            }}
+                          />
+                        </div>
+                        <span
+                          className="text-xs font-mono"
+                          style={{ color: "var(--slate-400)" }}
+                        >
+                          {progress.completed}/{progress.total}
+                        </span>
+                      </div>
+                    </td>
+                    <td
+                      className="px-5 py-3.5 text-sm font-mono"
+                      style={{ color: "var(--slate-400)" }}
+                    >
+                      {run._count.articles}
+                    </td>
+                    <td
+                      className="px-5 py-3.5 text-xs"
+                      style={{ color: "var(--slate-400)" }}
+                    >
+                      {new Date(run.created_at).toLocaleDateString()}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

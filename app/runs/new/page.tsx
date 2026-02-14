@@ -103,28 +103,72 @@ export default function CreateRunPage() {
     }
   }
 
-  const inputClass =
-    "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+  const inputStyle = {
+    background: "var(--navy-800)",
+    border: "1px solid var(--navy-700)",
+    color: "var(--slate-200)",
+  };
+
+  const inputFocusClass =
+    "w-full rounded-lg px-3 py-2.5 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 placeholder:opacity-40";
 
   return (
     <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Run</h1>
+      <div className="mb-8">
+        <h1
+          className="text-2xl font-semibold tracking-tight"
+          style={{ color: "var(--slate-200)" }}
+        >
+          Create Run
+        </h1>
+        <p className="text-sm mt-1" style={{ color: "var(--slate-400)" }}>
+          Configure a new newsletter generation pipeline
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">
+          <div
+            className="px-4 py-3 rounded-lg text-sm"
+            style={{
+              background: "rgba(244, 63, 94, 0.1)",
+              color: "var(--rose-500)",
+              border: "1px solid rgba(244, 63, 94, 0.2)",
+            }}
+          >
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-900">Basic Info</h2>
+        <div className="card p-6 space-y-4">
+          <h2
+            className="text-sm font-semibold uppercase tracking-wider"
+            style={{ color: "var(--slate-300)" }}
+          >
+            Basic Info
+          </h2>
 
           <div>
-            <label className={labelClass}>Run Name *</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: "var(--slate-400)" }}
+            >
+              Run Name *
+            </label>
             <input
-              className={inputClass}
+              className={inputFocusClass}
+              style={{
+                ...inputStyle,
+                boxShadow: "none",
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--teal-500)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--navy-700)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               value={form.run_name}
               onChange={(e) =>
                 setForm((f) => ({ ...f, run_name: e.target.value }))
@@ -135,9 +179,23 @@ export default function CreateRunPage() {
           </div>
 
           <div>
-            <label className={labelClass}>Prompt Topic *</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: "var(--slate-400)" }}
+            >
+              Prompt Topic *
+            </label>
             <input
-              className={inputClass}
+              className={inputFocusClass}
+              style={{ ...inputStyle, boxShadow: "none" }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--teal-500)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--navy-700)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               value={form.prompt_topic}
               onChange={(e) =>
                 setForm((f) => ({ ...f, prompt_topic: e.target.value }))
@@ -148,25 +206,56 @@ export default function CreateRunPage() {
           </div>
 
           <div>
-            <label className={labelClass}>Keywords (comma-separated)</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: "var(--slate-400)" }}
+            >
+              Keywords (comma-separated)
+            </label>
             <input
-              className={inputClass}
+              className={inputFocusClass}
+              style={{ ...inputStyle, boxShadow: "none" }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--teal-500)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--navy-700)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               value={form.keywords}
               onChange={(e) =>
                 setForm((f) => ({ ...f, keywords: e.target.value }))
               }
               placeholder="e.g. LLM, enterprise AI, GPT, Claude"
             />
-            <p className="text-xs text-gray-400 mt-1">
+            <p
+              className="text-[11px] mt-1.5 font-mono"
+              style={{ color: "var(--slate-400)", opacity: 0.7 }}
+            >
               Leave empty to auto-generate via AI
             </p>
           </div>
 
           {profiles.length > 0 && (
             <div>
-              <label className={labelClass}>Profile (optional)</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Profile (optional)
+              </label>
               <select
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.profile_id}
                 onChange={(e) => handleProfileChange(e.target.value)}
               >
@@ -181,13 +270,32 @@ export default function CreateRunPage() {
           )}
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-900">Sources</h2>
+        <div className="card p-6 space-y-4">
+          <h2
+            className="text-sm font-semibold uppercase tracking-wider"
+            style={{ color: "var(--slate-300)" }}
+          >
+            Sources
+          </h2>
 
           <div>
-            <label className={labelClass}>Specific URLs (one per line)</label>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: "var(--slate-400)" }}
+            >
+              Specific URLs (one per line)
+            </label>
             <textarea
-              className={inputClass}
+              className={inputFocusClass}
+              style={{ ...inputStyle, boxShadow: "none" }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--teal-500)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--navy-700)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               rows={3}
               value={form.specific_urls}
               onChange={(e) =>
@@ -198,29 +306,60 @@ export default function CreateRunPage() {
           </div>
 
           <div>
-            <label className={labelClass}>
+            <label
+              className="block text-xs font-medium mb-1.5"
+              style={{ color: "var(--slate-400)" }}
+            >
               Source URLs (one per line — RSS feeds or HTML pages)
             </label>
             <textarea
-              className={inputClass}
+              className={inputFocusClass}
+              style={{ ...inputStyle, boxShadow: "none" }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = "var(--teal-500)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = "var(--navy-700)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               rows={4}
               value={form.source_urls}
               onChange={(e) =>
                 setForm((f) => ({ ...f, source_urls: e.target.value }))
               }
-              placeholder="https://example.com/rss&#10;https://news.site.com/ai"
+              placeholder={"https://example.com/rss\nhttps://news.site.com/ai"}
             />
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
-          <h2 className="font-semibold text-gray-900">Settings</h2>
+        <div className="card p-6 space-y-4">
+          <h2
+            className="text-sm font-semibold uppercase tracking-wider"
+            style={{ color: "var(--slate-300)" }}
+          >
+            Settings
+          </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Mode</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Mode
+              </label>
               <select
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.mode}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, mode: e.target.value }))
@@ -232,10 +371,24 @@ export default function CreateRunPage() {
             </div>
 
             <div>
-              <label className={labelClass}>Lookback Days</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Lookback Days
+              </label>
               <input
                 type="number"
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.lookback_days}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -247,11 +400,25 @@ export default function CreateRunPage() {
             </div>
 
             <div>
-              <label className={labelClass}>Min Fit Score</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Min Fit Score
+              </label>
               <input
                 type="number"
                 step="0.1"
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.min_fit_score}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -263,10 +430,24 @@ export default function CreateRunPage() {
             </div>
 
             <div>
-              <label className={labelClass}>Max Total Articles</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Max Total Articles
+              </label>
               <input
                 type="number"
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.max_total_articles}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -278,10 +459,24 @@ export default function CreateRunPage() {
             </div>
 
             <div>
-              <label className={labelClass}>Max Per Domain</label>
+              <label
+                className="block text-xs font-medium mb-1.5"
+                style={{ color: "var(--slate-400)" }}
+              >
+                Max Per Domain
+              </label>
               <input
                 type="number"
-                className={inputClass}
+                className={inputFocusClass}
+                style={{ ...inputStyle, boxShadow: "none" }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = "var(--teal-500)";
+                  e.currentTarget.style.boxShadow = "0 0 0 2px rgba(20, 184, 166, 0.15)";
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = "var(--navy-700)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
                 value={form.max_per_domain}
                 onChange={(e) =>
                   setForm((f) => ({
@@ -292,22 +487,33 @@ export default function CreateRunPage() {
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-6">
-              <input
-                type="checkbox"
-                id="ranking_enabled"
-                checked={form.ranking_enabled}
-                onChange={(e) =>
+            <div className="flex items-center gap-3 pt-6">
+              <button
+                type="button"
+                onClick={() =>
                   setForm((f) => ({
                     ...f,
-                    ranking_enabled: e.target.checked,
+                    ranking_enabled: !f.ranking_enabled,
                   }))
                 }
-                className="rounded border-gray-300"
-              />
+                className="relative w-10 h-5 rounded-full transition-all duration-200"
+                style={{
+                  background: form.ranking_enabled
+                    ? "var(--teal-500)"
+                    : "var(--navy-700)",
+                }}
+              >
+                <span
+                  className="absolute top-0.5 w-4 h-4 rounded-full transition-all duration-200"
+                  style={{
+                    background: "var(--slate-200)",
+                    left: form.ranking_enabled ? "22px" : "2px",
+                  }}
+                />
+              </button>
               <label
-                htmlFor="ranking_enabled"
-                className="text-sm text-gray-700"
+                className="text-sm"
+                style={{ color: "var(--slate-300)" }}
               >
                 Enable AI Ranking
               </label>
@@ -315,18 +521,42 @@ export default function CreateRunPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 pt-2">
           <button
             type="submit"
             disabled={submitting}
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 disabled:opacity-50"
+            style={{
+              background: "linear-gradient(135deg, var(--teal-500), var(--teal-400))",
+              color: "var(--navy-950)",
+            }}
           >
-            {submitting ? "Creating..." : "Create Run"}
+            {submitting ? (
+              <span className="flex items-center gap-2">
+                <span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }} />
+                Creating...
+              </span>
+            ) : (
+              "Create Run"
+            )}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="border border-gray-200 text-gray-700 px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-50"
+            className="px-6 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--navy-700)",
+              color: "var(--slate-400)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = "var(--navy-600)";
+              e.currentTarget.style.color = "var(--slate-200)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = "var(--navy-700)";
+              e.currentTarget.style.color = "var(--slate-400)";
+            }}
           >
             Cancel
           </button>
