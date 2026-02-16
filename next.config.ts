@@ -20,7 +20,10 @@ const nextConfig: NextConfig = {
     "yocto-queue",
   ],
   outputFileTracingIncludes: {
-    "/api/runs/[id]/phase/[phaseName]": ["./prompts/**/*.txt"],
+    "/api/runs/[id]/phase/[phaseName]": [
+      "./prompts/**/*.txt",
+      "./node_modules/jsdom/lib/jsdom/browser/default-stylesheet.css",
+    ],
   },
 };
 
