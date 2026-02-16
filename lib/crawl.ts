@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { parseHTML } from "linkedom";
 import { Readability } from "@mozilla/readability";
 
 export interface ExtractedContent {
@@ -34,8 +34,11 @@ export async function fetchHtml(
 }
 
 export function extractContent(html: string, url: string): ExtractedContent {
-  const dom = new JSDOM(html, { url });
-  const doc = dom.window.document;
+  // Inject <base> tag so relative URLs resolve correctly (linkedom has no url option)
+  const htmlWithBase = html.includes("<base")
+    ? html
+    : html.replace(/(<head[^>]*>)/i, `$1<base href="${url}">`);
+  const { document: doc } = parseHTML(htmlWithBase);
 
   const canonicalEl = doc.querySelector('link[rel="canonical"]');
   const canonicalUrl = canonicalEl?.getAttribute("href") || null;
@@ -54,8 +57,7 @@ export function extractContent(html: string, url: string): ExtractedContent {
 }
 
 export function extractLinks(html: string, baseUrl: string): string[] {
-  const dom = new JSDOM(html, { url: baseUrl });
-  const doc = dom.window.document;
+  const { document: doc } = parseHTML(html);
   const links: string[] = [];
   const seen = new Set<string>();
 

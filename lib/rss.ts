@@ -1,4 +1,4 @@
-import { JSDOM } from "jsdom";
+import { DOMParser } from "linkedom";
 
 export interface RssItem {
   url: string;
@@ -12,8 +12,8 @@ export function isRssFeed(text: string): boolean {
 }
 
 export function parseRss(xmlText: string): RssItem[] {
-  const dom = new JSDOM(xmlText, { contentType: "text/xml" });
-  const doc = dom.window.document;
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, "text/xml");
   const items: RssItem[] = [];
 
   // RSS 2.0 (<item>)

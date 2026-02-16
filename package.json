@@ -16,7 +16,7 @@
     "@prisma/adapter-neon": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "exceljs": "^4.4.0",
-    "jsdom": "^28.0.0",
+    "linkedom": "^0.18.12",
     "next": "16.1.6",
     "p-limit": "^4.0.0",
     "react": "19.2.3",
@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@types/jsdom": "^27.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
