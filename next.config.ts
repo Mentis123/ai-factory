@@ -1,4 +1,32 @@
 import type { NextConfig } from "next";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+class CopyJsdomDefaultStylesheetPlugin {
+  apply(compiler: { hooks: { afterEmit: { tapPromise: (name: string, cb: () => Promise<void>) => void } }; options: { output: { path?: string } } }) {
+    compiler.hooks.afterEmit.tapPromise(
+      "CopyJsdomDefaultStylesheetPlugin",
+      async () => {
+        const source = path.join(
+          process.cwd(),
+          "node_modules/jsdom/lib/jsdom/browser/default-stylesheet.css",
+        );
+        const outputPath = compiler.options.output.path ?? path.join(process.cwd(), ".next");
+        const serverOutputPath =
+          path.basename(outputPath) === "server"
+            ? outputPath
+            : path.join(outputPath, "server");
+        const destination = path.join(
+          serverOutputPath,
+          "app/api/runs/[id]/browser/default-stylesheet.css",
+        );
+
+        await fs.mkdir(path.dirname(destination), { recursive: true });
+        await fs.copyFile(source, destination);
+      },
+    );
+  }
+}
 
 const nextConfig: NextConfig = {
   serverExternalPackages: [
@@ -20,10 +48,20 @@ const nextConfig: NextConfig = {
     "yocto-queue",
   ],
   outputFileTracingIncludes: {
+    // For App Router route handlers, this key must match the normalized route
+    // path (without the trailing `/route` segment).
     "/api/runs/[id]/phase/[phaseName]": [
       "./prompts/**/*.txt",
       "./node_modules/jsdom/lib/jsdom/browser/default-stylesheet.css",
     ],
+  },
+  webpack: (config, { dev, isServer }) => {
+    if (isServer && !dev) {
+      config.plugins = config.plugins ?? [];
+      config.plugins.push(new CopyJsdomDefaultStylesheetPlugin());
+    }
+
+    return config;
   },
 };
 
