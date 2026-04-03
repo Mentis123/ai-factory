@@ -1,0 +1,51 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(vitest:*)",
+      "Bash(git:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "The user is about to run a Bash command. Check if it starts a local dev server (npm run dev, npm start, next dev, etc). If so, respond with {\"ok\": false, \"reason\": \"Never start local dev servers. Test via Vercel deployment.\"}. Also evaluate risk using the severity rubric (1-5). If severity >= 4, respond with {\"ok\": false, \"reason\": \"High risk operation: <description>. Requires confirmation.\"}. Otherwise {\"ok\": true}."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx prettier --write $CLAUDE_FILE_PATH 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before finishing, check: (1) Are there failing tests? (2) Are there uncommitted changes? If either is true, respond with {\"ok\": false, \"reason\": \"Mention any failing tests and ask if the user wants to commit uncommitted changes.\"}. Otherwise, respond with {\"ok\": true}."
+          }
+        ]
+      }
+    ]
+  }
+}
