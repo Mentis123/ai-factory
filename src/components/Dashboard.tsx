@@ -110,8 +110,8 @@ export default function Dashboard(): React.ReactElement {
       {/* Header */}
       <div className="app-header">
         <div className="app-logo">
-          <h1>AI Navigator</h1>
-          <span>GAI Insights Intelligence</span>
+          <h1>GAI Insights Factory</h1>
+          <span>Executive AI Intelligence</span>
         </div>
         <div className="app-header-actions">
           {latestRun && latestRun.status === "completed" && (

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "AI Navigator — GAI Insights",
+  title: "GAI Insights Factory",
   description:
     "Executive AI intelligence platform. Research, analyze, and brief on the latest AI developments.",
 };
